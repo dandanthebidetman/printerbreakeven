@@ -157,6 +157,43 @@
   .notes li{font-size:13px;color:var(--ink-soft);padding-left:18px;position:relative;margin-bottom:9px;line-height:1.55}
   .notes li::before{content:"—";position:absolute;left:0;color:var(--teal)}
   .footer{margin-top:26px;text-align:center;font-size:12px;color:var(--ink-soft)}
+
+  /* stock reorder line */
+  .stockline{display:flex;align-items:center;gap:10px;padding:14px 22px;border-top:1px solid var(--line);
+    font-size:13.5px;color:var(--ink-soft);background:rgba(184,134,59,.05)}
+  .stockline b{color:var(--ink)}
+  .sl-tag{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--gold);
+    border:1px solid rgba(184,134,59,.4);border-radius:5px;padding:3px 7px}
+
+  /* projection */
+  .proj{margin-top:26px}
+  .proj-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;margin-bottom:14px}
+  .proj-controls .lab{margin:0}
+  .prefix-num{position:relative;display:inline-block}
+  .prefix-num input{width:130px;font-family:inherit;font-size:15px;color:var(--ink);background:#fff;
+    border:1px solid var(--line);border-radius:9px;padding:10px 13px}
+  .prefix-num input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,99,.13)}
+  .proj-summary{font-size:13.5px;color:var(--ink-soft);flex:1;min-width:240px;line-height:1.45}
+  .proj-summary b{color:var(--ink);font-weight:700}
+  #chart{margin-top:6px}
+  #chart svg{width:100%;height:auto;display:block}
+  #chart text{font-family:'Hanken Grotesk',sans-serif}
+  #chart .grid{stroke:var(--line);stroke-width:1}
+  #chart .yl{fill:var(--ink-soft);font-size:11px;text-anchor:end}
+  #chart .xl{fill:var(--ink-soft);font-size:11px;text-anchor:middle}
+  #chart .axt{fill:var(--ink-soft);font-size:10px;text-anchor:middle;letter-spacing:.12em}
+  #chart .pl{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+  #chart .pl.house{stroke:var(--teal)}
+  #chart .pl.ups{stroke:var(--cost);stroke-dasharray:7 4}
+  #chart .crossline{stroke:var(--gold);stroke-width:1;stroke-dasharray:3 3}
+  #chart .crossdot{fill:var(--gold);stroke:#fff;stroke-width:2.5}
+  #chart .crosslbl{fill:var(--gold);font-size:11px;font-weight:700;text-anchor:middle}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;font-size:12.5px;color:var(--ink-soft)}
+  .legend .lg{display:inline-flex;align-items:center}
+  .legend .sw{display:inline-block;width:16px;height:10px;border-radius:2px;margin-right:7px}
+  .legend .sw.house{background:linear-gradient(90deg,var(--teal),var(--teal-deep))}
+  .legend .sw.ups{background:repeating-linear-gradient(45deg,#9c4a36,#9c4a36 5px,#8a4030 5px,#8a4030 10px)}
+  .legend .sw.cross{width:10px;height:10px;border-radius:50%;background:var(--gold)}
 </style>
 </head>
 <body>
@@ -186,6 +223,16 @@
               <button data-sides="2" class="active">Double</button>
             </div>
           </div>
+        </div>
+
+        <div class="field">
+          <label class="lab" for="pieceSize">Finished piece size <span class="hint">(pieces per letter sheet)</span></label>
+          <select id="pieceSize">
+            <option value="full" selected>Full page — 8.5 × 11 (1 per sheet)</option>
+            <option value="half">Half page — 5.5 × 8.5 (2 per sheet)</option>
+            <option value="quarter">Quarter page / postcard — 4.25 × 5.5 (4 per sheet)</option>
+            <option value="card">Business card — 3.5 × 2 (10 per sheet)</option>
+          </select>
         </div>
 
         <div class="field">
@@ -267,20 +314,47 @@
         </div>
 
         <div class="breakdown">
+          <div class="brow"><span>Imposition</span><b id="bdImp">1 / sheet · 500 sheets</b></div>
           <div class="brow"><span>Paper</span><b id="bdPaper">$0.130 / pc</b></div>
           <div class="brow"><span>Toner <span id="bdSides">×2 sides</span></span><b id="bdToner">$0.260 / pc</b></div>
           <div class="brow"><span>Drum / fuser / upkeep</span><b id="bdMaint">$0.024 / pc</b></div>
           <div class="brow tot"><span>In-house cost per piece</span><b id="bdTotal">$0.414 / pc</b></div>
         </div>
 
+        <div class="stockline">
+          <span class="sl-tag">Stock</span>
+          <span>This job consumes <b id="stockSheets">500 sheets</b><span id="stockReams"></span> of paper.</span>
+        </div>
+
         <div class="payback">
           <h3>Equipment payback</h3>
-          <p id="paybackTxt">At <span class="big" id="pbSave">$0.57</span> saved per piece, the <span class="big" id="pbInvest">$1,600</span> setup pays for itself after about <span class="big" id="pbCount">2,800 pieces</span> — roughly <span class="big" id="pbMonths">6 months</span> at this job's volume each month.</p>
+          <p id="paybackTxt">At <span class="big" id="pbSave">$0.57</span> saved per piece, the <span class="big" id="pbInvest">$1,600</span> setup pays for itself after about <span class="big" id="pbCount">2,800 pieces</span> — roughly <span class="big" id="pbMonths">6 months</span> at <span class="big" id="pbVol">500</span> pieces/month.</p>
         </div>
 
       </div>
     </section>
   </div>
+
+  <!-- PROJECTION -->
+  <section class="panel proj">
+    <div class="panel-head">
+      <h2>12-Month Cumulative Cost</h2>
+      <span class="tag">In-house vs. UPS</span>
+    </div>
+    <div class="panel-body">
+      <div class="proj-controls">
+        <label class="lab" for="monthlyVol">Pieces printed per month</label>
+        <div class="prefix-num"><input type="number" id="monthlyVol" min="0" step="50" value="500"></div>
+        <p class="proj-summary" id="projSummary"></p>
+      </div>
+      <div id="chart"></div>
+      <div class="legend">
+        <span class="lg"><i class="sw house"></i> In-house — includes $<span id="lgInvest">1,600</span> upfront setup</span>
+        <span class="lg"><i class="sw ups"></i> The UPS Store</span>
+        <span class="lg"><i class="sw cross"></i> Break-even point</span>
+      </div>
+    </div>
+  </section>
 
   <!-- REFERENCE -->
   <section class="ref">
@@ -321,6 +395,7 @@
   <div class="notes">
     <h3>Assumptions &amp; the fine print</h3>
     <ul>
+      <li><b>Piece size &amp; imposition.</b> Costs are figured per parent letter (8.5×11) sheet, then split across the pieces that fit on it — 2 half-pages, 4 quarter-pages/postcards, or 10 business cards per sheet. That's why small items are cheap per piece: one sheet of toner makes ten cards. Running 2-up on tabloid (which the C7000 does) roughly doubles the yield again — enter the tabloid sheet price in the paper field to model it.</li>
       <li><b>Toner.</b> Genuine Xerox C7000 toner runs about 0.65¢/page black and 0.74¢/page per color at the ISO 5%-coverage standard. Marketing collateral covers far more than 5%, so the coverage presets scale that up: light ≈ $0.03, medium ≈ $0.07, heavy full-bleed ≈ $0.13 per side. Compatible (non-Xerox) toner can roughly halve these — drop the toner field if you plan to use it.</li>
       <li><b>Maintenance.</b> The drum is rated ~82,000 pages and the fuser ~100,000 pages; spread across pages that's roughly a penny-plus per side. Toggle it off to see consumables only.</li>
       <li><b>Paper.</b> Targets assume laser/digital-rated coated stock bought by the case. Inkjet-coated paper can damage a fuser — always buy laser-rated gloss.</li>
@@ -344,6 +419,14 @@
   };
   const TONER_REC = { light:0.03, medium:0.07, heavy:0.13 };
   const MAINT_PER_SIDE = 0.012;
+
+  // finished pieces per letter (8.5x11) parent sheet
+  const PIECE = {
+    full:    {nup:1},
+    half:    {nup:2},
+    quarter: {nup:4},
+    card:    {nup:10}
+  };
 
   // UPS cover-stock color rate by quantity tier (per side)
   function upsTier(qty){
@@ -391,7 +474,55 @@
   });
 
   $('upsRate').addEventListener('input',()=>{upsManual=true;recalc();});
-  ['qty','tonerCost','maint','upsCut','invest'].forEach(id=>$(id).addEventListener('input',recalc));
+  $('pieceSize').addEventListener('change',recalc);
+  ['qty','tonerCost','maint','upsCut','invest','monthlyVol'].forEach(id=>$(id).addEventListener('input',recalc));
+
+  function niceMax(v){
+    if(v<=0) return 100;
+    const pow=Math.pow(10,Math.floor(Math.log10(v)));
+    const n=v/pow; let nice;
+    if(n<=1)nice=1;else if(n<=2)nice=2;else if(n<=2.5)nice=2.5;else if(n<=5)nice=5;else nice=10;
+    return nice*pow;
+  }
+
+  function drawChart(invest, housePer, upsPer, vol){
+    const M=12, W=720, H=360, padL=64, padR=22, padT=18, padB=42;
+    const houseMo=housePer*vol, upsMo=upsPer*vol;
+    const house=[], ups=[]; let maxY=0;
+    for(let m=0;m<=M;m++){
+      const h=invest+houseMo*m, u=upsMo*m;
+      house.push(h); ups.push(u); maxY=Math.max(maxY,h,u);
+    }
+    maxY=niceMax(maxY);
+    const plotW=W-padL-padR, plotH=H-padT-padB;
+    const X=m=>padL+(m/M)*plotW;
+    const Y=v=>padT+plotH-(maxY?v/maxY:0)*plotH;
+    const poly=a=>a.map((v,m)=>X(m).toFixed(1)+","+Y(v).toFixed(1)).join(' ');
+
+    let grid='';
+    for(let i=0;i<=4;i++){const val=maxY*i/4, yy=Y(val);
+      grid+=`<line class="grid" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`;
+      grid+=`<text class="yl" x="${padL-8}" y="${yy+4}">$${Math.round(val).toLocaleString()}</text>`;}
+    let xl='';
+    for(let m=0;m<=M;m+=2) xl+=`<text class="xl" x="${X(m)}" y="${H-padB+22}">${m}</text>`;
+
+    const diffPer=upsPer-housePer;
+    let cross=''; let crossM=null;
+    if(diffPer>0){ crossM=invest/(diffPer*vol);
+      if(crossM<=M){ const cx=X(crossM), cy=Y(upsMo*crossM);
+        cross=`<line class="crossline" x1="${cx}" y1="${padT}" x2="${cx}" y2="${H-padB}"/>
+               <circle class="crossdot" cx="${cx}" cy="${cy}" r="5"/>
+               <text class="crosslbl" x="${cx}" y="${padT-4}">break-even</text>`; } }
+
+    $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cumulative cost over 12 months">
+      ${grid}${cross}
+      <polyline class="pl ups" points="${poly(ups)}"/>
+      <polyline class="pl house" points="${poly(house)}"/>
+      ${xl}
+      <text class="axt" x="${padL+plotW/2}" y="${H-6}">MONTHS</text>
+    </svg>`;
+    return crossM;
+  }
 
   function recalc(){
     const qty = Math.max(1, Math.floor(+$('qty').value || 0));
@@ -410,15 +541,23 @@
     const upsRate = Math.max(0, +$('upsRate').value || 0);
     $('upsRec').textContent = upsManual ? "(manual)" : "("+UPS_LABELS[tier]+")";
 
-    // ---- in-house ----
-    const maintCost = maintOn ? MAINT_PER_SIDE*sides : 0;
-    const tonerCost = toner*sides;
-    const housePer = paper + tonerCost + maintCost;
-    const houseTot = housePer*qty;
+    // ---- imposition ----
+    const nup = PIECE[$('pieceSize').value].nup;
+    const sheets = Math.ceil(qty/nup);
 
-    // ---- UPS ----
-    const upsCutPer = cutOn ? (4/50) : 0;          // $4 per 50 pieces
-    const upsPer = upsRate*sides + upsCutPer;
+    // ---- in-house (cost is per parent sheet, divided across n pieces) ----
+    const maintSheet = maintOn ? MAINT_PER_SIDE*sides : 0;
+    const tonerSheet = toner*sides;
+    const sheetCost = paper + tonerSheet + maintSheet;   // per parent sheet
+    const houseTot = sheetCost*sheets;
+    const housePer = qty>0 ? houseTot/qty : 0;
+    const paperPer = paper/nup;
+    const tonerPer = tonerSheet/nup;
+    const maintPer = maintSheet/nup;
+
+    // ---- UPS (per-side rate is per parent page; gang-up divides it too) ----
+    const upsCutPer = cutOn ? (4/50) : 0;          // $4 per 50 finished pieces
+    const upsPer = (upsRate*sides)/nup + upsCutPer;
     const upsTot = upsPer*qty;
 
     // ---- savings ----
@@ -427,10 +566,11 @@
     const pct = upsTot>0 ? (saveTot/upsTot*100) : 0;
 
     // breakdown
-    $('bdPaper').textContent = per(paper)+" / pc";
+    $('bdImp').textContent = nup+" / sheet · "+sheets.toLocaleString()+" sheet"+(sheets>1?"s":"");
+    $('bdPaper').textContent = per(paperPer)+" / pc";
     $('bdSides').textContent = "×"+sides+" side"+(sides>1?"s":"");
-    $('bdToner').textContent = per(tonerCost)+" / pc";
-    $('bdMaint').textContent = (maintOn?per(maintCost):"$0.000")+" / pc";
+    $('bdToner').textContent = per(tonerPer)+" / pc";
+    $('bdMaint').textContent = (maintOn?per(maintPer):"$0.000")+" / pc";
     $('bdTotal').textContent = per(housePer)+" / pc";
 
     // totals + bars
@@ -457,20 +597,43 @@
       $('savePct').textContent = Math.round(Math.abs(pct))+"% pricier";
     }
 
-    // payback
+    // stock to reorder
+    $('stockSheets').textContent = sheets.toLocaleString()+" sheet"+(sheets>1?"s":"");
+    const reams = sheets/500;
+    $('stockReams').textContent = reams>=0.1 ? " (~"+(reams<10?reams.toFixed(reams<1?2:1):Math.round(reams))+" ream"+(reams>=2?"s":"")+")" : "";
+
+    // payback (uses recurring monthly volume)
+    const monthlyVol = Math.max(0, Math.floor(+$('monthlyVol').value || 0));
+    $('lgInvest').textContent = invest.toLocaleString();
     if(savePer>0){
       const count = Math.ceil(invest/savePer);
-      const months = qty>0 ? (count/qty) : 0;
+      const months = monthlyVol>0 ? (count/monthlyVol) : 0;
       $('pbSave').textContent = per(savePer);
       $('pbInvest').textContent = money(invest);
       $('pbCount').textContent = count.toLocaleString()+" pieces";
-      $('pbMonths').textContent = (months<1?"under a month":(months.toFixed(months<10?1:0)+" month"+(months>=2?"s":"")));
-      $('paybackTxt').style.opacity=1;
+      $('pbVol').textContent = monthlyVol.toLocaleString();
+      $('pbMonths').textContent = monthlyVol<=0 ? "—" : (months<1?"under a month":(months.toFixed(months<10?1:0)+" month"+(months>=2?"s":"")));
     }else{
       $('pbSave').textContent = per(savePer);
       $('pbInvest').textContent = money(invest);
       $('pbCount').textContent = "—";
+      $('pbVol').textContent = monthlyVol.toLocaleString();
       $('pbMonths').textContent = "n/a at these settings";
+    }
+
+    // 12-month projection chart
+    const crossM = drawChart(invest, housePer, upsPer, monthlyVol);
+    const y1House = invest + housePer*monthlyVol*12;
+    const y1Ups = upsPer*monthlyVol*12;
+    const y1Save = y1Ups - y1House;
+    if(savePer>0 && monthlyVol>0){
+      const cm = (crossM!==null && crossM<=12) ? ("month "+Math.ceil(crossM))
+               : (crossM!==null ? ("after year one (~month "+Math.round(crossM)+")") : "—");
+      $('projSummary').innerHTML = `At <b>${monthlyVol.toLocaleString()}/mo</b>, in-house overtakes UPS at <b>${cm}</b>. By month 12 you're <b>${money(y1Save)}</b> ahead — UPS would cost <b>${money(y1Ups)}</b> vs <b>${money(y1House)}</b> all-in.`;
+    }else if(monthlyVol<=0){
+      $('projSummary').innerHTML = `Enter a monthly volume to project the year.`;
+    }else{
+      $('projSummary').innerHTML = `At these settings the per-piece cost is higher in-house, so the lines never cross — revisit coverage, paper, or piece size.`;
     }
   }
 
